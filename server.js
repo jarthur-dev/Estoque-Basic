@@ -4,16 +4,19 @@
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
+const path = require('path'); // Importação necessária para gerenciar caminhos de arquivos
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+// Faz o Express servir os arquivos das pastas css, js, img e html automaticamente
+app.use(express.static(path.join(__dirname)));
+
 // ==========================================
 // CONFIGURAÇÃO DO POOL DE CONEXÕES COM O MYSQL
 // ==========================================
-// Mudamos para createPool para maior estabilidade na nuvem
 const db = mysql.createPool({
     host: 'bzryndb6o1831lkc6r6o-mysql.services.clever-cloud.com', 
     user: 'us7ddcx1drmpwbrf',                                    
@@ -21,7 +24,7 @@ const db = mysql.createPool({
     database: 'bzryndb6o1831lkc6r6o',                            
     port: 3306,
     waitForConnections: true,
-    connectionLimit: 3, // Garante que nunca vai estourar o limite de 5 conexões da Clever Cloud
+    connectionLimit: 3, 
     queueLimit: 0
 });
 
@@ -32,7 +35,14 @@ db.getConnection((err, connection) => {
         return;
     }
     console.log('🚀 Conexão com o MySQL na Nuvem validada com sucesso!');
-    connection.release(); // Libera a conexão de teste imediatamente
+    connection.release(); 
+});
+
+// ==========================================
+// ROTA DA PÁGINA INICIAL (ENTREGA O FRONTEND)
+// ==========================================
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'html', 'listagem.html'));
 });
 
 // ==========================================
@@ -65,7 +75,7 @@ app.get('/api/produtos', (req, res) => {
 });
 
 // ==========================================
-// ROTA NOVA: BUSCAR APENAS UM PRODUTO PELO ID
+// ROTA: BUSCAR APENAS UM PRODUTO PELO ID
 // ==========================================
 app.get('/api/produtos/:id', (req, res) => {
     const idProduto = req.params.id;
@@ -82,19 +92,20 @@ app.get('/api/produtos/:id', (req, res) => {
 });
 
 // ==========================================
-// ROTA NOVA: ATUALIZAR PRODUTO EXISTENTE (MÉTODO PUT)
+// ROTA: ATUALIZAR PRODUTO EXISTENTE (MÉTODO PUT)
 // ==========================================
 app.put('/api/produtos/:id', (req, res) => {
     const idProduto = req.params.id;
     const { nome, categoria, quantidade, preco, descricao } = req.body;
     const query = 'UPDATE produtos SET nome = ?, categoria = ?, quantidade = ?, preco = ?, descricao = ? WHERE id = ?';
 
-    db.query(query, [nome, category, parseInt(quantidade), parseFloat(preco), descricao, idProduto], (err, result) => {
+    // CORRIGIDO: Mudado de "category" para "categoria" para evitar o travamento do Node!
+    db.query(query, [nome, categoria, parseInt(quantidade), parseFloat(preco), descricao, idProduto], (err, result) => {
         if (err) {
             console.error('Erro ao atualizar produto no banco:', err);
             return res.status(500).json(err);
         }
-        res.json({ message: "Produto atualizado com sucesso" });
+        res.json({ message: "Produto updated com sucesso" });
     });
 });
 
@@ -115,7 +126,6 @@ app.delete('/api/produtos/:id', (req, res) => {
 // ==========================================
 // INICIALIZAÇÃO DO SERVIDOR WEB
 // ==========================================
-// Usamos process.env.PORT porque o Vercel define a própria porta online automaticamente
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log('==================================================');
