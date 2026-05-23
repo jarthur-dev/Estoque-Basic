@@ -1,73 +1,83 @@
-# Controle de Estoque Básico
+# 📦 CONTROLE DE ESTOQUE // GERENCIAMENTO EM TEMPO REAL
 
-Este é um projeto completo de controle e gerenciamento de estoque de mercadorias em tempo real. A aplicação foi desenvolvida com foco na integração prática entre uma interface web (front-end) dinâmica e um servidor de banco de dados relacional (back-end).
+O **Estoque Básico** é um ecossistema completo focado em alta performance, organização de mercadorias e integridade de dados. Desenvolvida com uma estética moderna e limpa, a plataforma foi projetada para entregar uma experiência de navegação fluida, responsiva e de gerenciamento em tempo real, conectando diretamente a interface de usuário a um banco de dados relacional.
 
-## 🚀 Tecnologias Utilizadas
+---
 
-* **Front-End:**
-  * **HTML5:** Estruturação semântica de todas as telas da aplicação.
-  * **Bootstrap 5:** Framework CSS utilizado para garantir uma interface moderna, limpa e totalmente responsiva.
-  * **Bootstrap Icons:** Biblioteca de ícones oficiais aplicada nos botões e cabeçalhos.
-  * **SweetAlert2:** Biblioteca JavaScript utilizada para a criação de modais de alertas flutuantes e confirmações de exclusão interativas.
-  * **JavaScript (Vanilla/ES6):** Manipulação assíncrona do DOM através da API `fetch` para comunicação com o servidor.
+## ⚡ O Conceito
 
-* **Back-End:**
-  * **Node.js & Express:** Ambiente de execução e framework para a construção e gerenciamento das rotas da API REST.
-  * **MySQL:** Banco de dados relacional para o armazenamento permanente e seguro de todas as informações dos produtos.
+A aplicação resolve o problema de controle interno de pequenos e médios inventários, permitindo que alterações de quantidade, preço e dados informativos reflitam instantaneamente. A arquitetura separa de forma limpa as responsabilidades de renderização de tela (Front-end) das regras de persistência e endpoints de API (Back-end).
+
+---
+
+## 🛠️ Pilha Tecnológica
+
+O projeto utiliza o que há de mais prático e robusto no ecossistema de desenvolvimento web:
+
+* **Interface:** `HTML5` para estruturação semântica e acessível das páginas.
+* **Estilização:** `Bootstrap 5` para garantia de um layout fluido, design profissional e total responsividade.
+* **Componentes Visuais:** `Bootstrap Icons` para mapeamento de ações e representações visuais limpas.
+* **Interações Dinâmicas:** `SweetAlert2` para feedbacks assíncronos e caixas de confirmação de segurança.
+* **Linguagem Base:** `JavaScript (ES6+)` para manipulação de eventos do DOM e requisições assíncronas com a API `fetch`.
+* **Ambiente de Execução:** `Node.js` integrado ao framework `Express` para provisionamento da API REST.
+* **Banco de Dados:** `MySQL` para armazenamento relacional seguro e persistência definitiva.
+
+---
+
+## 🚀 Funcionalidades da Plataforma
+
+* **Listagem Automatizada:** Renderização assíncrona dos itens do banco com formatação automática para moeda brasileira (`R$`).
+* **Ordenação Inteligente:** Filtro em tempo real que reordena a tabela por ID de cadastro, Nome (`A-Z` e `Z-A`), Preço ou Nível de Estoque.
+* **Formulário Híbrido:** Tela inteligente de cadastro capaz de ler parâmetros da URL e se transformar dinamicamente em modo de edição (`PUT`).
+* **Exclusão com Trava de Segurança:** Janela de confirmação que impede cliques acidentais e garante a remoção consciente do item no banco.
+* **Tratamento de Falhas:** Feedbacks automatizados e telas de aviso amigáveis para falhas de conexão ou inventário totalmente vazio.
+
+---
+
+## ⚙️ Como Rodar o Projeto na Sua Máquina
+
+### 1. Configuração do Banco de Dados
+
+Abra o seu **MySQL Workbench** e execute integralmente o script de criação contido no arquivo `banco.sql` local para provisionar corretamente o esquema `sistema_produtos` e a tabela de armazenamento.
+
+---
+
+### 2. 🖥️ Inicialização do Servidor Back-End
+
+Abra a pasta do projeto no terminal integrado do seu **VS Code** e inicialize o serviço do Node.js:
+
+```bash
+node server.js
+
+```
+---
+
+## 3. 🌐 Execução da Interface Web
+
+### Com o servidor Node ativo rodando em segundo plano:
+
+Vá até a árvore de arquivos e clique com o botão direito sobre o arquivo `listagem.html`.
+
+Selecione a opção Open with Live Server para abrir o dashboard diretamente no seu navegador padrão.
 
 ---
 
 ## 📂 Estrutura de Pastas do Projeto
 
-A organização dos arquivos segue o padrão estrutural da aplicação:
+A organização dos arquivos segue rigorosamente o padrão estrutural planejado para a aplicação:
 
-```text
 /projeto
 │
-├── cadastro.html     # Tela para inserção de novos produtos e edição de itens existentes
-├── listagem.html     # Tela principal de visualização, filtragem e gerenciamento do estoque
-├── banco.sql         # Script SQL com a estrutura do banco de dados e dados de teste
-├── server.js         # Servidor Node.js com as rotas da API REST (Back-end)
+├── banco.sql         # Script de criação de tabelas e massa de dados do MySQL
+├── server.js         # Servidor API REST construído em Node.js
 │
 ├── /css
-│   └── style.css     # Estilizações personalizadas complementares ao Bootstrap
+│   └── style.css     # Estilizações finas e personalizadas complementares ao Bootstrap
+│
+├── /html
+│   ├── cadastro.html # Formulário de inserção e edição de mercadorias
+│   └── listagem.html # Painel principal de controle e listagem do estoque
 │
 ├── /js
-│   └── script.js     # Arquivo opcional/auxiliar de funções e mapeamento JavaScript
-│
-└── /img              # Pasta destinada ao armazenamento de imagens e ativos locais
-
-🛠️ Funcionalidades Implementadas
-Listagem em Tempo Real: Exibição completa de todos os itens cadastrados no MySQL com formatação de moeda brasileira (R$).
-
-Ordenação Inteligente: Filtro interativo na listagem que permite ordenar os produtos por ordem de cadastro, nome (A-Z / Z-A), preço e quantidade em estoque.
-
-Cadastro e Validação: Formulário inteligente para inserção de produtos diretamente no estoque.
-
-Edição Dinâmica (Modo Edição): A mesma tela de cadastro identifica a presença de um ID na URL, preenche os campos automaticamente e altera o comportamento para atualização (PUT).
-
-Exclusão Segura: Botão de exclusão integrado ao SweetAlert2 que solicita a confirmação do usuário antes de rodar o comando DELETE no MySQL.
-
-Alerta de Estoque Vazio: Feedback visual amigável caso não existam mercadorias registradas no banco de dados.
-
-⚙️ Como Rodar o Projeto Localmente
-1. Configurar o Banco de Dados
-Abra o MySQL Workbench (ou o terminal do MySQL).
-
-Execute todo o conteúdo contido no arquivo banco.sql para criar o banco de dados sistema_produtos, a tabela produtos e inserir os dados de teste.
-
-2. Iniciar o Servidor Back-End
-Abra a pasta raiz do projeto no seu VS Code.
-
-Abra o terminal integrado e certifique-se de que o Node está configurado.
-
-Inicie o servidor executando o comando:
-
-Bash
-node server.js
-Certifique-se de que a mensagem "Servidor rodando na porta 3000" apareceu no terminal.
-
-3. Rodar o Front-End
-Com o servidor Node ativo, clique com o botão direito no arquivo listagem.html.
-
-Selecione a opção Open with Live Server para abrir a aplicação diretamente no seu navegador.
+│   └── script.js     # Arquivos e funções auxiliares de monitoramento
+└── /img              # Diretório de armazenamento de mídias e ativos visuais locais
