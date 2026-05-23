@@ -8,11 +8,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// CONFIGURAÇÃO DIRETAMENTE APONTADA PARA A RAIZ DO PROJETO
+// Servir arquivos estáticos da raiz do projeto
 app.use(express.static(path.join(process.cwd())));
 
 // ==========================================
-// CONFIGURAÇÃO DO POOL COM VARIÁVEIS DA VERCEL
+// CONFIGURAÇÃO DO POOL ADAPTADA PARA SERVERLESS (SEM KEEPALIVE)
 // ==========================================
 const db = mysql.createPool({
     host: process.env.MYSQL_ADDON_HOST,
@@ -21,15 +21,12 @@ const db = mysql.createPool({
     password: process.env.MYSQL_ADDON_PASSWORD,
     port: process.env.MYSQL_ADDON_PORT || 3306,
     waitForConnections: true,
-    connectionLimit: 1,         // Limite seguro para o plano gratuito
+    connectionLimit: 1,         // Mantido em 1 para o limite do plano grátis
     queueLimit: 0,
-    idleTimeout: 10000,         
-    enableKeepAlive: true,      
-    keepAliveInitialDelay: 0,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false } // Obrigatório para conexões seguras na nuvem
 });
 
-// Rota da Página Inicial - Serve a listagem na raiz
+// Rota da Página Inicial
 app.get('/', (req, res) => {
     res.sendFile(path.join(process.cwd(), 'listagem.html'));
 });
@@ -52,7 +49,9 @@ app.get('/api/produtos', (req, res) => {
 // ==========================================
 app.post('/api/produtos', (req, res) => {
     const { nome, categoria, quantidade, preco, descricao } = req.body;
-    const query = 'INSERT INTO produtos (nome, categoria, quantidade, preco, descricao) VALUES (?, ?, ?, ?, ?)';
+    
+    // Mapeado explicitamente para a coluna "Categoria" (com C maiúsculo) do seu banco na Clever Cloud!
+    const query = 'INSERT INTO produtos (nome, Categoria, quantidade, preco, descricao) VALUES (?, ?, ?, ?, ?)';
     
     db.query(query, [nome, categoria, parseInt(quantidade), parseFloat(preco), descricao], (err, result) => {
         if (err) {
