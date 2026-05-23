@@ -54,7 +54,7 @@ function inicializarCadastro() {
 // ---- LÓGICA DA TELA DE LISTAGEM ----
 async function carregarProdutos() {
     // Mapeia o elemento de corpo da tabela contido na listagem para injeção de dados
-    const tabela = document.getElementById('tabelaProdutos');
+    const tabela = document.getElementById('listaProdutos'); 
     
     try {
         // Dispara uma requisição de leitura assíncrona (GET) para obter o Array com todos os produtos do MySQL

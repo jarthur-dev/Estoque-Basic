@@ -24,7 +24,11 @@
       "destination": "/css/$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/html/(.*)",
+      "destination": "/html/$1"
+    },
+    {
+      "source": "/",
       "destination": "/html/listagem.html"
     }
   ]
