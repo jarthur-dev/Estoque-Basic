@@ -3,12 +3,8 @@
   "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/api/:path*",
+      "source": "/(.*)",
       "destination": "/server.js"
-    },
-    {
-      "source": "/",
-      "destination": "/html/listagem.html"
     }
   ]
 }
