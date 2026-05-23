@@ -1,35 +1,14 @@
 {
   "version": 2,
   "cleanUrls": true,
-  "builds": [
+  "rewrites": [
     {
-      "src": "server.js",
-      "use": "@vercel/node"
+      "source": "/api/:path*",
+      "destination": "/server.js"
     },
     {
-      "src": "html/**/*",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "css/**/*",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "js/**/*",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "server.js"
-    },
-    {
-      "src": "/",
-      "dest": "/html/listagem.html"
-    },
-    {
-      "handle": "filesystem"
+      "source": "/",
+      "destination": "/html/listagem.html"
     }
   ]
 }

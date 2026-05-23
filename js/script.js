@@ -1,5 +1,5 @@
 // Constante global contendo o endereço base (endpoint) do servidor para a API de produtos
-const API_URL = 'http://localhost:3000/api/produtos';
+const API_URL = '/api/produtos';
 
 // Adiciona um escutador global que intercepta a finalização do carregamento da estrutura de árvore DOM da página
 document.addEventListener('DOMContentLoaded', () => {
