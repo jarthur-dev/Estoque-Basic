@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoque de Produtos</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-light py-5">
+
+    <div class="container">
+        
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="card-body">
+                
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                    <div>
+                        <h2 class="fw-bold h3 text-dark mb-1"><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Controle de Estoque</h2>
+                        <p class="text-muted small mb-0">Lista de mercadorias atualizadas em tempo real</p>
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-3">
+                        <select id="filtroOrdem" class="form-select filtro-ordem-btn fw-semibold px-6 py-2 rounded-4 text-secondary" onchange="ordenarERenderizar()">
+                            <option value="cadastro">Ordem de cadastro (Padrão)</option>
+                            <option value="nome-az">Nome (A - Z)</option>
+                            <option value="nome-za">Nome (Z - A)</option>
+                            <option value="preco-menor">Preço: Mais barato</option>
+                            <option value="preco-maior">Preço: Mais caro</option>
+                            <option value="qtd-maior">Quantidade: Maior estoque</option>
+                            <option value="qtd-menor">Quantidade: Menor estoque</option>
+                        </select>
+
+                        <a href="cadastro.html" class="btn btn-success fw-semibold px-6 py-2 rounded-4 d-inline-flex align-items-center">
+                            <i class="bi bi-plus-lg me-2"></i>Novo
+                        </a>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">ID</th>
+                                <th>Nome</th>
+                                <th>Categoria</th>
+                                <th class="text-center">Qtd</th>
+                                <th class="text-end">Preço Unitário</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaProdutos"></tbody>
+                    </table>
+                </div>
+
+                <div id="alertaVazio" class="text-center py-4 d-none">
+                    <i class="bi bi-inbox text-muted display-4"></i>
+                    <p class="text-muted mt-2">Nenhum produto encontrado no banco.</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let produtosGlobais = [];
+
+        async function carregarProdutos() {
+            try {
+                const response = await fetch('http://localhost:3000/api/produtos');
+                produtosGlobais = await response.json();
+                ordenarERenderizar();
+            } catch (error) {
+                console.error(error);
+                alert('Erro ao buscar dados do servidor.');
+            }
+        }
+
+        function ordenarERenderizar() {
+            const tipoOrdem = document.getElementById('filtroOrdem').value;
+            const tabela = document.getElementById('listaProdutos');
+            const alerta = document.getElementById('alertaVazio');
+            
+            tabela.innerHTML = '';
+
+            if (produtosGlobais.length === 0) {
+                alerta.classList.remove('d-none');
+                return;
+            }
+            alerta.classList.add('d-none');
+
+            let produtosOrdenados = [...produtosGlobais];
+
+            if (tipoOrdem === 'cadastro') {
+                produtosOrdenados.sort((a, b) => a.id - b.id);
+            } else if (tipoOrdem === 'nome-az') {
+                produtosOrdenados.sort((a, b) => a.nome.localeCompare(b.nome));
+            } else if (tipoOrdem === 'nome-za') {
+                produtosOrdenados.sort((a, b) => b.nome.localeCompare(a.nome));
+            } else if (tipoOrdem === 'preco-menor') {
+                produtosOrdenados.sort((a, b) => Number(a.preco) - Number(b.preco));
+            } else if (tipoOrdem === 'preco-maior') {
+                produtosOrdenados.sort((a, b) => Number(b.preco) - Number(a.preco));
+            } else if (tipoOrdem === 'qtd-maior') {
+                produtosOrdenados.sort((a, b) => b.quantidade - a.quantidade);
+            } else if (tipoOrdem === 'qtd-menor') {
+                produtosOrdenados.sort((a, b) => a.quantidade - b.quantidade);
+            }
+
+            produtosOrdenados.forEach(p => {
+                const precoFormatado = Number(p.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                
+                tabela.innerHTML += `
+                    <tr>
+                        <td class="fw-bold text-secondary ps-3">#${p.id}</td>
+                        <td class="fw-semibold text-dark">${p.nome}</td>
+                        <td><span class="badge bg-secondary-subtle text-secondary px-2.5 py-1.5 rounded">${p.categoria}</span></td>
+                        <td class="text-center fw-bold">${p.quantidade}</td>
+                        <td class="text-end fw-semibold text-success">${precoFormatado}</td>
+                        <td class="text-center">
+                            <div class="d-inline-flex gap-2">
+                                <button onclick="editarProduto(${p.id})" class="btn-editar-moderno" title="Editar Produto">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button onclick="deletarProduto(${p.id}, '${p.nome.replace(/'/g, "\\\\'")}')" class="btn-excluir-moderno" title="Excluir Produto">
+                                    <i class="bi bi-trash3-fill"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function editarProduto(id) {
+            window.location.href = `cadastro.html?id=${id}`;
+        }
+
+        async function deletarProduto(id, nomeProduto) {
+            Swal.fire({
+                title: 'Tem certeza?',
+                text: `Você deseja mesmo excluir o produto "${nomeProduto}" permanentemente do banco de dados?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="bi bi-trash-fill me-1"></i> Sim, deletar!',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch(`http://localhost:3000/api/produtos/${id}`, { method: 'DELETE' });
+                        if (response.ok) {
+                            Swal.fire({
+                                title: 'Deletado!',
+                                text: 'O item foi removido permanentemente do seu estoque.',
+                                icon: 'success',
+                                confirmButtonColor: '#059669'
+                            });
+                            carregarProdutos();
+                        } else {
+                            Swal.fire({
+                                title: 'Erro!',
+                                text: 'Não foi possível excluir o item do banco de dados.',
+                                icon: 'error',
+                                confirmButtonColor: '#dc2626'
+                            });
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        Swal.fire({
+                            title: 'Erro de Conexão',
+                            text: 'O servidor não respondeu. Certifique-se de que o Node está rodando.',
+                            icon: 'error',
+                            confirmButtonColor: '#dc2626'
+                        });
+                    }
+                }
+            });
+        }
+
+        carregarProdutos();
+    </script>
+</body>
+</html>

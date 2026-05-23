@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Produtos</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-light d-flex align-items-center" style="min-height: 100vh;">
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                
+                <div class="card border-0 shadow-sm rounded-4 p-4">
+                    <div class="card-body">
+                        
+                        <div class="text-center mb-4">
+                            <div class="display-6 text-primary mb-2"><i class="bi bi-box-seam-fill"></i></div>
+                            <h2 id="tituloPagina" class="fw-bold h4 text-dark mb-1">Novo Produto</h2>
+                            <p id="subtituloPagina" class="text-muted small">Preencha os dados para salvar no estoque</p>
+                        </div>
+
+                        <form id="formProduto">
+                            
+                            <input type="hidden" id="produtoId">
+
+                            <div class="mb-3">
+                                <label for="nome" class="form-label fw-semibold text-secondary small">Nome do Produto</label>
+                                <input type="text" class="form-control" id="nome" required placeholder="Ex: Teclado Mecânico">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="categoria" class="form-label fw-semibold text-secondary small">Categoria</label>
+                                <select class="form-select" id="categoria" required>
+                                    <option value="" disabled selected>Selecione uma categoria...</option>
+                                    <option value="Eletrônicos">Eletrônicos</option>
+                                    <option value="Informática">Informática</option>
+                                    <option value="Escritório">Escritório</option>
+                                    <option value="Outros">Outros</option>
+                                </select>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label for="quantidade" class="form-label fw-semibold text-secondary small">Quantidade</label>
+                                    <input type="number" class="form-control" id="quantidade" min="1" required placeholder="0">
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label for="preco" class="form-label fw-semibold text-secondary small">Preço (R$)</label>
+                                    <input type="number" step="0.01" class="form-control" id="preco" required placeholder="0,00">
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="descricao" class="form-label fw-semibold text-secondary small">Descrição (Opcional)</label>
+                                <textarea class="form-control" id="descricao" rows="2" placeholder="Detalhes do item..."></textarea>
+                            </div>
+
+                            <button type="submit" id="btnSalvar" class="btn btn-primary w-100 py-2 fw-semibold rounded-3 mb-2">
+                                <i class="bi bi-check-circle-fill me-2"></i>Cadastrar Produto
+                            </button>
+                            
+                            <a href="listagem.html" class="btn btn-outline-secondary w-100 py-2 fw-semibold rounded-3 small text-decoration-none text-center d-block">
+                                <i class="bi bi-list-ul me-2"></i>Ver Estoque
+                            </a>
+                        </form>
+
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ROTINA 1: CAPTURAR PARAMETROS DA URL AO CARREGAR A TELA
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verifica os parâmetros inseridos na barra de endereços (ex: ?id=2)
+            const urlParams = new URLSearchParams(window.location.search);
+            const idProduto = urlParams.get('id');
+
+            // Se houver um ID, mudamos o comportamento da tela para o Modo Edição
+            if (idProduto) {
+                // Altera dinamicamente os textos dos títulos para o usuário saber que está editando
+                document.getElementById('tituloPagina').innerText = "Editar Produto";
+                document.getElementById('subtituloPagina').innerText = "Atualize os dados necessários do estoque";
+                
+                // Transforma visualmente o botão de envio para "Atualizar" (estilo verde/success)
+                const btnSalvar = document.getElementById('btnSalvar');
+                btnSalvar.className = "btn btn-success w-100 py-2 fw-semibold rounded-3 mb-2";
+                btnSalvar.innerHTML = `<i class="bi bi-arrow-clockwise me-2"></i>Atualizar Produto`;
+
+                try {
+                    // Busca os dados cadastrados unicamente para este ID no back-end
+                    const response = await fetch(`http://localhost:3000/api/produtos/${idProduto}`);
+                    
+                    if (response.ok) {
+                        const produto = await response.json();
+                        
+                        // Preenche automaticamente cada uma das boxes do formulário
+                        document.getElementById('produtoId').value = produto.id;
+                        document.getElementById('nome').value = produto.nome;
+                        document.getElementById('categoria').value = produto.categoria;
+                        document.getElementById('quantidade').value = produto.quantidade;
+                        document.getElementById('preco').value = produto.preco;
+                        document.getElementById('descricao').value = produto.descricao || '';
+                    } else {
+                        Swal.fire({
+                            title: 'Erro!',
+                            text: 'Não foi possível carregar os dados deste produto.',
+                            icon: 'error',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
+                } catch (error) {
+                    console.error(error);
+                    Swal.fire({
+                        title: 'Erro de Conexão',
+                        text: 'Erro ao se comunicar com o servidor no carregamento dos dados.',
+                        icon: 'warning',
+                        confirmButtonColor: '#ffc107'
+                    });
+                }
+            }
+        });
+
+        // ROTINA 2: MONITORAR O ENVIO DO FORMULÁRIO (SALVAR / ATUALIZAR)
+        document.getElementById('formProduto').addEventListener('submit', async (e) => {
+            // Impede que a página recarregue do jeito antigo ao enviar o formulário
+            e.preventDefault();
+            
+            // Lê o ID do campo oculto (se tiver valor é Edição/PUT, se estiver vazio é Cadastro/POST)
+            const id = document.getElementById('produtoId').value;
+
+            // Monta o objeto JavaScript com os valores digitados nas caixas de texto
+            const produto = {
+                nome: document.getElementById('nome').value,
+                categoria: document.getElementById('categoria').value,
+                quantidade: document.getElementById('quantidade').value,
+                preco: document.getElementById('preco').value,
+                descricao: document.getElementById('descricao').value
+            };
+
+            // Define dinamicamente o método HTTP e a URL com base na existência do ID
+            const url = id ? `http://localhost:3000/api/produtos/${id}` : 'http://localhost:3000/api/produtos';
+            const metodoHttp = id ? 'PUT' : 'POST';
+
+            try {
+                // Dispara uma requisição HTTP via fetch enviando o JSON real para o back-end
+                const response = await fetch(url, {
+                    method: metodoHttp,
+                    headers: { 'Content-Type': 'application/json' }, // Avisa ao servidor que estamos mandando um JSON
+                    body: JSON.stringify(produto) // Transforma o objeto JS em string de texto JSON puro
+                });
+
+                // Se a resposta do servidor retornar com sucesso (status na faixa dos 200)
+                if (response.ok) {
+                    Swal.fire({
+                        title: id ? 'Atualizado!' : 'Sucesso Real!',
+                        text: id ? 'Produto atualizado com sucesso no banco de dados!' : 'Produto cadastrado com sucesso no banco de dados!',
+                        icon: 'success',
+                        confirmButtonColor: id ? '#198754' : '#0d6efd', // Verde se for atualizar, azul se for cadastrar
+                        confirmButtonText: 'Excelente!'
+                    }).then(() => {
+                        // Se foi uma edição, após o usuário clicar em "Excelente!", ele volta automático para a tabela
+                        if (id) {
+                            window.location.href = 'listagem.html';
+                        } else {
+                            document.getElementById('formProduto').reset(); // Limpa se for apenas um novo item
+                        }
+                    });
+                } else {
+                    // Alerta moderno para erro de resposta do servidor
+                    Swal.fire({
+                        title: id ? 'Erro na Atualização' : 'Erro no Cadastro',
+                        text: 'Não foi possível salvar as alterações no banco de dados.',
+                        icon: 'error',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            } catch (error) {
+                console.error(error);
+                // Alerta moderno para falha de conexão (servidor desligado)
+                Swal.fire({
+                    title: 'Erro de Conexão',
+                    text: 'Não foi possível falar com o servidor. Garanta que rodou o node server.js!',
+                    icon: 'warning',
+                    confirmButtonColor: '#ffc107'
+                });
+            }
+        });
+    </script>    
+</body>
+</html>
