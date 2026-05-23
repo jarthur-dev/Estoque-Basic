@@ -56,7 +56,7 @@ node server.js
 
 ### Com o servidor Node ativo rodando em segundo plano:
 
-Vá até a árvore de arquivos e clique com o botão direito sobre o arquivo `listagem.html`.
+Vá até a árvore de arquivos e clique com o botão direito sobre o arquivo `cadastro.html`.
 
 Selecione a opção Open with Live Server para abrir o dashboard diretamente no seu navegador padrão.
 
@@ -66,6 +66,7 @@ Selecione a opção Open with Live Server para abrir o dashboard diretamente no 
 
 A organização dos arquivos segue rigorosamente o padrão estrutural planejado para a aplicação:
 
+```text
 /projeto
 │
 ├── banco.sql         # Script de criação de tabelas e massa de dados do MySQL
