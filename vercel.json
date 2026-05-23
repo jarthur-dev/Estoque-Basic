@@ -1,13 +1,21 @@
 {
   "cleanUrls": true,
-  "routes": [
+  "redirects": [
     {
-      "src": "/",
-      "dest": "/html/listagem.html"
-    },
+      "source": "/",
+      "destination": "/html/listagem.html",
+      "permanent": true
+    }
+  ],
+  "headers": [
     {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;"
+        }
+      ]
     }
   ]
 }
