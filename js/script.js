@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('formCadastro')) {
         inicializarCadastro();
     }
-    // CORRIGIDO: Agora verifica se a ID correta da tabela existe na tela!
+    // CORRIGIDO: Agora aponta exatamente para o id do HTML
     if (document.getElementById('listaProdutos')) {
         carregarProdutos();
     }
@@ -31,15 +31,17 @@ function inicializarCadastro() {
             });
 
             if (response.ok) {
-                Swal.fire("Sucesso!", "Produto cadastrado com sucesso!", "success");
+                mostrarMensagem("Produto cadastrado com sucesso!", "success");
                 document.getElementById('formCadastro').reset();
+                if (document.getElementById('listaProdutos')) {
+                    carregarProdutos();
+                }
             } else {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Erro ao salvar produto no servidor.");
+                throw new Error("Erro ao salvar produto no servidor.");
             }
         } catch (error) {
             console.error("Erro detalhado na requisição de cadastro:", error);
-            Swal.fire("Erro no Cadastro", error.message, "error");
+            mostrarMensagem("Erro ao conectar com o servidor.", "danger");
         }
     });
 }
@@ -66,7 +68,7 @@ async function carregarProdutos() {
         produtos.forEach(prod => {
             const tr = document.createElement('tr');
             
-            // Tratamento dinâmico para aceitar tanto Categoria (Maiúsculo) quanto categoria (Minúsculo)
+            // Aceita Categoria maiúsculo (Clever Cloud) ou minúsculo
             const cat = prod.Categoria || prod.categoria || "Sem Categoria";
             const id = prod.id || prod.ID;
 
@@ -77,9 +79,7 @@ async function carregarProdutos() {
                 <td class="text-center">${prod.quantidade}</td>
                 <td class="text-end">R$ ${parseFloat(prod.preco).toFixed(2)}</td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-outline-danger" onclick="deletarProduto(${id})">
-                        <i class="bi bi-trash"></i> Excluir
-                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deletarProduto(${id})">Excluir</button>
                 </td>
             `;
             tabela.appendChild(tr);
@@ -92,28 +92,30 @@ async function carregarProdutos() {
 
 // ---- FUNÇÃO PARA EXCLUIR PRODUTO ----
 async function deletarProduto(id) {
-    const resultado = await Swal.fire({
-        title: "Tem certeza?",
-        text: "Você deseja mesmo excluir este produto?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Sim, deletar!",
-        cancelButtonText: "Cancelar"
-    });
-
-    if (resultado.isConfirmed) {
+    if (confirm("Tem certeza que deseja excluir este produto?")) {
         try {
             const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
             if (response.ok) {
-                Swal.fire("Deletado!", "Produto removido com sucesso.", "success");
                 carregarProdutos();
             } else {
-                Swal.fire("Erro", "Não foi possível deletar o produto.", "error");
+                alert("Erro ao excluir produto.");
             }
         } catch (error) {
             console.error("Erro ao conectar com o servidor para exclusão:", error);
         }
     }
+}
+
+// ---- FUNÇÃO AUXILIAR DE FEEDBACK VISUAL ----
+function mostrarMensagem(texto, tipo) {
+    const msgDiv = document.getElementById('mensagem');
+    if (!msgDiv) return;
+    
+    msgDiv.innerText = texto;
+    msgDiv.className = `mensagem ${tipo}`;
+    
+    setTimeout(() => {
+        msgDiv.innerText = '';
+        msgDiv.className = '';
+    }, 3000);
 }

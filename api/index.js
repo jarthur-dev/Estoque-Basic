@@ -8,12 +8,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Servir arquivos estáticos da raiz do projeto
 app.use(express.static(path.join(process.cwd())));
 
-// ==========================================
-// CONFIGURAÇÃO DO POOL ADAPTADA PARA SERVERLESS (SEM KEEPALIVE)
-// ==========================================
 const db = mysql.createPool({
     host: process.env.MYSQL_ADDON_HOST,
     database: process.env.MYSQL_ADDON_DB,
@@ -21,19 +17,15 @@ const db = mysql.createPool({
     password: process.env.MYSQL_ADDON_PASSWORD,
     port: process.env.MYSQL_ADDON_PORT || 3306,
     waitForConnections: true,
-    connectionLimit: 1,         // Mantido em 1 para o limite do plano grátis
+    connectionLimit: 1,         
     queueLimit: 0,
-    ssl: { rejectUnauthorized: false } // Obrigatório para conexões seguras na nuvem
+    ssl: { rejectUnauthorized: false }
 });
 
-// Rota da Página Inicial
 app.get('/', (req, res) => {
     res.sendFile(path.join(process.cwd(), 'listagem.html'));
 });
 
-// ==========================================
-// ROTA 2: LISTAR TODOS OS PRODUTOS (MÉTODO GET)
-// ==========================================
 app.get('/api/produtos', (req, res) => {
     db.query('SELECT * FROM produtos ORDER BY id DESC', (err, results) => {
         if (err) {
@@ -44,13 +36,8 @@ app.get('/api/produtos', (req, res) => {
     });
 });
 
-// ==========================================
-// ROTA: CADASTRAR NOVO PRODUTO (MÉTODO POST)
-// ==========================================
 app.post('/api/produtos', (req, res) => {
     const { nome, categoria, quantidade, preco, descricao } = req.body;
-    
-    // Mapeado explicitamente para a coluna "Categoria" (com C maiúsculo) do seu banco na Clever Cloud!
     const query = 'INSERT INTO produtos (nome, Categoria, quantidade, preco, descricao) VALUES (?, ?, ?, ?, ?)';
     
     db.query(query, [nome, categoria, parseInt(quantidade), parseFloat(preco), descricao], (err, result) => {
@@ -62,9 +49,6 @@ app.post('/api/produtos', (req, res) => {
     });
 });
 
-// ==========================================
-// ROTA: DELETAR PRODUTO (MÉTODO DELETE)
-// ==========================================
 app.delete('/api/produtos/:id', (req, res) => {
     const idProduto = req.params.id;
     db.query('DELETE FROM produtos WHERE id = ?', [idProduto], (err, result) => {
