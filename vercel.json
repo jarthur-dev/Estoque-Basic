@@ -3,15 +3,33 @@
   "cleanUrls": true,
   "builds": [
     {
-      "src": "**/*",
+      "src": "server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "html/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "css/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "js/**/*",
       "use": "@vercel/static"
     }
   ],
-  "redirects": [
+  "routes": [
     {
-      "source": "/",
-      "destination": "/html/listagem.html",
-      "permanent": true
+      "src": "/api/(.*)",
+      "dest": "server.js"
+    },
+    {
+      "src": "/",
+      "dest": "/html/listagem.html"
+    },
+    {
+      "handle": "filesystem"
     }
   ]
 }
