@@ -25,7 +25,8 @@ const db = mysql.createPool({
     port: 3306,
     waitForConnections: true,
     connectionLimit: 3, 
-    queueLimit: 0
+    queueLimit: 0,
+    ssl: { rejectUnauthorized: false }
 });
 
 // Teste simples para garantir que o pool alcança o servidor na nuvem
