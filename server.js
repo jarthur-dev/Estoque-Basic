@@ -1,18 +1,17 @@
-// ==========================================
-// IMPORTAÇÃO DAS BIBLIOTECAS (PACOTES)
-// ==========================================
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
-const path = require('path'); // Importação necessária para gerenciar caminhos de arquivos
+const path = require('path');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Faz o Express servir os arquivos das pastas css, js, img e html automaticamente
-app.use(express.static(path.join(__dirname)));
+// CONFIGURAÇÃO CORRETA DE ARQUIVOS ESTÁTICOS (Isso corrige o erro do MIME type do CSS!)
+app.use(express.static(path.join(__dirname))); 
+app.use('/css', express.static(path.join(__dirname, 'css')));
+app.use('/js', express.static(path.join(__dirname, 'js')));
 
 // ==========================================
 // CONFIGURAÇÃO DO POOL DE CONEXÕES COM O MYSQL
@@ -26,40 +25,12 @@ const db = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 3, 
     queueLimit: 0,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false } // Mantido para segurança da nuvem
 });
 
-// Teste simples para garantir que o pool alcança o servidor na nuvem
-db.getConnection((err, connection) => {
-    if (err) {
-        console.error('Erro ao conectar ao MySQL na Nuvem:', err.message);
-        return;
-    }
-    console.log('🚀 Conexão com o MySQL na Nuvem validada com sucesso!');
-    connection.release(); 
-});
-
-// ==========================================
-// ROTA DA PÁGINA INICIAL (ENTREGA O FRONTEND)
-// ==========================================
+// Rota da Página Inicial
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'html', 'listagem.html'));
-});
-
-// ==========================================
-// ROTA 1: CADASTRAR PRODUTO (MÉTODO POST)
-// ==========================================
-app.post('/api/produtos', (req, res) => {
-    const { nome, categoria, quantidade, preco, descricao } = req.body;
-    const query = 'INSERT INTO produtos (nome, categoria, quantidade, preco, descricao) VALUES (?, ?, ?, ?, ?)';
-    
-    db.query(query, [nome, categoria, parseInt(quantidade), parseFloat(preco), descricao], (err, result) => {
-        if (err) {
-            console.error('Erro ao inserir produto no banco:', err);
-            return res.status(500).json(err); 
-        }
-        res.status(201).json({ id: result.insertId });
-    });
 });
 
 // ==========================================
@@ -69,7 +40,8 @@ app.get('/api/produtos', (req, res) => {
     db.query('SELECT * FROM produtos ORDER BY id DESC', (err, results) => {
         if (err) {
             console.error('Erro ao buscar produtos no banco:', err);
-            return res.status(500).json(err);
+            // MODIFICADO: Retorna o erro em formato JSON para conseguirmos ler no DevTools
+            return res.status(500).json({ error: err.message, detail: err });
         }
         res.json(results);
     });
