@@ -78,7 +78,7 @@ app.put('/api/produtos/:id', (req, res) => {
             console.error('Erro ao atualizar produto no banco:', err);
             return res.status(500).json(err);
         }
-        res.json({ message: "Produto updated com sucesso" });
+        res.json({ message: "Produto atualizado com sucesso" });
     });
 });
 
