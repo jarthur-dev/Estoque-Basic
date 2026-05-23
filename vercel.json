@@ -1,10 +1,13 @@
 {
   "cleanUrls": true,
-  "redirects": [
+  "routes": [
     {
-      "source": "/",
-      "destination": "/html/listagem.html",
-      "permanent": true
+      "src": "/",
+      "dest": "/html/listagem.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ]
 }
