@@ -47,8 +47,12 @@ function inicializarCadastro() {
                 throw new Error(); // Força o desvio do fluxo de execução para o bloco catch em caso de falha de status
             }
         } catch (error) {
-            mostrarMensagem("Erro ao cadastrar produto.", "error"); // Aciona a exibição do alerta visual informando falha
-        }
+        // ISSO AQUI VAI MOSTRAR NO CONSOLE DO NAVEGADOR O QUE A VERCEL RESPONDEU
+        console.error("Erro detalhado na requisição:", error);
+        
+        // Manipula o HTML exibindo um aviso textual vermelho caso a requisição web falhe por indisponibilidade do servidor
+        tabela.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Erro ao carregar dados do servidor.</td></tr>`;
+    }
     });
 }
 
