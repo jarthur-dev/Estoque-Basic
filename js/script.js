@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('formCadastro')) {
         inicializarCadastro();
     }
-    // CORRIGIDO: Agora aponta exatamente para o id do HTML
+    // CORRIGIDO: Agora aponta exatamente para a tabela do seu HTML
     if (document.getElementById('listaProdutos')) {
         carregarProdutos();
     }
@@ -68,7 +68,7 @@ async function carregarProdutos() {
         produtos.forEach(prod => {
             const tr = document.createElement('tr');
             
-            // Aceita Categoria maiúsculo (Clever Cloud) ou minúsculo
+            // Aceita Categoria maiúscula (Clever Cloud) ou minúscula
             const cat = prod.Categoria || prod.categoria || "Sem Categoria";
             const id = prod.id || prod.ID;
 
