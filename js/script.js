@@ -53,39 +53,30 @@ function inicializarCadastro() {
 
 // ---- LÓGICA DA TELA DE LISTAGEM ----
 async function carregarProdutos() {
-    // Mapeia o elemento de corpo da tabela contido na listagem para injeção de dados
     const tabela = document.getElementById('listaProdutos'); 
     
     try {
-        // Dispara uma requisição de leitura assíncrona (GET) para obter o Array com todos os produtos do MySQL
         const response = await fetch(API_URL);
-        const produtos = await response.json(); // Converte a string de resposta estruturada JSON para Array utilizável
+        const produtos = await response.json(); 
 
-        // ==========================================
-        // BLINDAGEM DA API: VALIDA SE O BACKEND RETORNOU ERRO EM VEZ DE ARRAY
-        // ==========================================
         if (produtos.error || !Array.isArray(produtos)) {
             console.error("O banco de dados enviou uma resposta inválida:", produtos);
             throw new Error(produtos.error || "Resposta inválida do servidor");
         }
 
-        tabela.innerHTML = ''; // Limpa qualquer conteúdo residual preexistente no corpo da tabela
+        tabela.innerHTML = ''; 
 
-        // Condicional: Verifica se o array de resposta do back-end não trouxe registros cadastrados
         if (produtos.length === 0) {
-            // Insere uma linha centralizada cobrindo todas as colunas informando que o estoque está vazio
             tabela.innerHTML = `<tr><td colspan="5" style="text-align:center;">Nenhum produto em estoque.</td></tr>`;
             return;
         }
 
-        // Loop de iteração: passa individualmente por cada objeto contido na lista de produtos obtida
         produtos.forEach(prod => {
-            // Cria um elemento físico de linha de tabela (<tr>) isolado em memória
             const tr = document.createElement('tr');
-            // Formata o conteúdo HTML inserindo dinamicamente as propriedades reais do produto nas colunas correspondentes
+            // CORREÇÃO AQUI: prod.Categoria com "C" maiúsculo para bater com o MySQL!
             tr.innerHTML = `
                 <td>${prod.nome}</td>
-                <td>${prod.categoria}</td>
+                <td>${prod.Categoria}</td> 
                 <td>${prod.quantidade}</td>
                 <td>R$ ${parseFloat(prod.preco).toFixed(2)}</td>
                 <td>
@@ -93,12 +84,10 @@ async function carregarProdutos() {
                     <button class="btn-excluir" onclick="deletarProduto(${prod.id})">Excluir</button>
                 </td>
             `;
-            // Acopla a linha configurada como um novo filho da tabela de exibição geral na interface
             tabela.appendChild(tr);
         });
     } catch (error) {
         console.error("Erro capturado na renderização da listagem:", error);
-        // Manipula o HTML exibindo um aviso textual vermelho caso a requisição web falhe por indisponibilidade do servidor
         tabela.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red; font-weight:bold;">Erro ao carregar dados do servidor.</td></tr>`;
     }
 }

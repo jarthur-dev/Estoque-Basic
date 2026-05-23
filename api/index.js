@@ -8,8 +8,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// CONFIGURAÇÃO DE ARQUIVOS ESTÁTICOS CORRIGIDA PARA A RAIZ
-app.use(express.static(path.join(__dirname, '../'))); 
+// CONFIGURAÇÃO DOS ARQUIVOS ESTÁTICOS APONTANDO PARA A RAIZ DO PROJETO
+app.use(express.static(path.join(__dirname, '..'))); 
 app.use('/css', express.static(path.join(__dirname, '../css')));
 app.use('/js', express.static(path.join(__dirname, '../js')));
 
@@ -23,7 +23,7 @@ const db = mysql.createPool({
     password: process.env.MYSQL_ADDON_PASSWORD,
     port: process.env.MYSQL_ADDON_PORT || 3306,
     waitForConnections: true,
-    connectionLimit: 1,         // Mantido em 1 para o plano gratuito
+    connectionLimit: 1,         // Mantido em 1 para o plano gratuito da Clever Cloud
     queueLimit: 0,
     idleTimeout: 10000,         
     enableKeepAlive: true,      
@@ -31,9 +31,9 @@ const db = mysql.createPool({
     ssl: { rejectUnauthorized: false }
 });
 
-// Rota da Página Inicial - Ajustada para buscar na raiz agora!
+// Rota da Página Inicial - Serve o arquivo da raiz
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../', 'listagem.html'));
+    res.sendFile(path.join(__dirname, '../listagem.html'));
 });
 
 // ==========================================
@@ -95,7 +95,7 @@ app.put('/api/produtos/:id', (req, res) => {
             console.error('Erro ao atualizar produto no banco:', err);
             return res.status(500).json(err);
         }
-        res.json({ message: "Produto updated com sucesso" });
+        res.json({ message: "Produto atualizado com sucesso" });
     });
 });
 
@@ -113,5 +113,4 @@ app.delete('/api/produtos/:id', (req, res) => {
     });
 });
 
-// Exporta o app para o Vercel conseguir ler como Serverless Function
 module.exports = app;
