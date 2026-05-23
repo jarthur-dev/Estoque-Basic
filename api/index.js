@@ -14,15 +14,17 @@ app.use('/css', express.static(path.join(__dirname, 'css')));
 app.use('/js', express.static(path.join(__dirname, 'js')));
 
 // ==========================================
-// CONFIGURAÇÃO DO POOL VIA URI (CORRIGE O ERRO ENOTFOUND)
+// CONFIGURAÇÃO DO POOL OTIMIZADA PARA EVITAR TIMEOUT
 // ==========================================
 const db = mysql.createPool({
-    // Usamos a URI completa copiada direto do seu painel da Clever Cloud:
     uri: 'mysql://us7ddcx1drmpwbrf:cOhbYNw21RvYR084CHYN@bzryndb6o1831lkc6r6o-mysql.services.clever-cloud.com/bzryndb6o1831lkc6r6o',
     waitForConnections: true,
-    connectionLimit: 3, 
+    connectionLimit: 1,         // Reduzido para 1 para não estourar o limite do plano grátis
     queueLimit: 0,
-    ssl: { rejectUnauthorized: false } // Mantém a segurança ativa para nuvem
+    idleTimeout: 10000,         // Fecha conexões inativas após 10 segundos
+    enableKeepAlive: true,      // Mantém a conexão viva enquanto envia dados
+    keepAliveInitialDelay: 0,
+    ssl: { rejectUnauthorized: false }
 });
 
 // Rota da Página Inicial
