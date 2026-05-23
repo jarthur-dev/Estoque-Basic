@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('formCadastro')) {
         inicializarCadastro();
     }
-    // CORRIGIDO: Agora aponta exatamente para a tabela do seu HTML
+    // CORRIGIDO: Escuta o ID real da sua tabela do listagem.html
     if (document.getElementById('listaProdutos')) {
         carregarProdutos();
     }
@@ -33,9 +33,6 @@ function inicializarCadastro() {
             if (response.ok) {
                 mostrarMensagem("Produto cadastrado com sucesso!", "success");
                 document.getElementById('formCadastro').reset();
-                if (document.getElementById('listaProdutos')) {
-                    carregarProdutos();
-                }
             } else {
                 throw new Error("Erro ao salvar produto no servidor.");
             }
@@ -68,7 +65,7 @@ async function carregarProdutos() {
         produtos.forEach(prod => {
             const tr = document.createElement('tr');
             
-            // Aceita Categoria maiúscula (Clever Cloud) ou minúscula
+            // Aceita Categoria maiúscula ou minúscula do MySQL
             const cat = prod.Categoria || prod.categoria || "Sem Categoria";
             const id = prod.id || prod.ID;
 
