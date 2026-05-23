@@ -16,20 +16,8 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/js/(.*)",
-      "destination": "/js/$1"
-    },
-    {
-      "source": "/css/(.*)",
-      "destination": "/css/$1"
-    },
-    {
-      "source": "/html/(.*)",
-      "destination": "/html/$1"
-    },
-    {
       "source": "/",
-      "destination": "/html/listagem.html"
+      "destination": "/listagem.html"
     }
   ]
 }
