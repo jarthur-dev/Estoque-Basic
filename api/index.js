@@ -8,28 +8,32 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// CONFIGURAÇÃO CORRETA DE ARQUIVOS ESTÁTICOS (Isso corrige o erro do MIME type do CSS!)
-app.use(express.static(path.join(__dirname))); 
-app.use('/css', express.static(path.join(__dirname, 'css')));
-app.use('/js', express.static(path.join(__dirname, 'js')));
+// CONFIGURAÇÃO DE ARQUIVOS ESTÁTICOS CORRIGIDA PARA A RAIZ
+app.use(express.static(path.join(__dirname, '../'))); 
+app.use('/css', express.static(path.join(__dirname, '../css')));
+app.use('/js', express.static(path.join(__dirname, '../js')));
 
 // ==========================================
-// CONFIGURAÇÃO DO POOL OTIMIZADA PARA EVITAR TIMEOUT
+// CONFIGURAÇÃO DO POOL LENDO AS VARIÁVEIS DA VERCEL
 // ==========================================
 const db = mysql.createPool({
-    uri: 'mysql://us7ddcx1drmpwbrf:cOhbYNw21RvYR084CHYN@bzryndb6o1831lkc6r6o-mysql.services.clever-cloud.com/bzryndb6o1831lkc6r6o',
+    host: process.env.MYSQL_ADDON_HOST,
+    database: process.env.MYSQL_ADDON_DB,
+    user: process.env.MYSQL_ADDON_USER,
+    password: process.env.MYSQL_ADDON_PASSWORD,
+    port: process.env.MYSQL_ADDON_PORT || 3306,
     waitForConnections: true,
-    connectionLimit: 1,         // Reduzido para 1 para não estourar o limite do plano grátis
+    connectionLimit: 1,         // Mantido em 1 para o plano gratuito
     queueLimit: 0,
-    idleTimeout: 10000,         // Fecha conexões inativas após 10 segundos
-    enableKeepAlive: true,      // Mantém a conexão viva enquanto envia dados
+    idleTimeout: 10000,         
+    enableKeepAlive: true,      
     keepAliveInitialDelay: 0,
     ssl: { rejectUnauthorized: false }
 });
 
-// Rota da Página Inicial
+// Rota da Página Inicial - Ajustada para buscar na raiz agora!
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'html', 'listagem.html'));
+    res.sendFile(path.join(__dirname, '../', 'listagem.html'));
 });
 
 // ==========================================
@@ -39,7 +43,6 @@ app.get('/api/produtos', (req, res) => {
     db.query('SELECT * FROM produtos ORDER BY id DESC', (err, results) => {
         if (err) {
             console.error('Erro ao buscar produtos no banco:', err);
-            // MODIFICADO: Retorna o erro em formato JSON para conseguirmos ler no DevTools
             return res.status(500).json({ error: err.message, detail: err });
         }
         res.json(results);
@@ -64,6 +67,22 @@ app.get('/api/produtos/:id', (req, res) => {
 });
 
 // ==========================================
+// ROTA: CADASTRAR NOVO PRODUTO (MÉTODO POST)
+// ==========================================
+app.post('/api/produtos', (req, res) => {
+    const { nome, categoria, quantidade, preco, descricao } = req.body;
+    const query = 'INSERT INTO produtos (nome, categoria, quantidade, preco, descricao) VALUES (?, ?, ?, ?, ?)';
+    
+    db.query(query, [nome, categoria, parseInt(quantidade), parseFloat(preco), descricao], (err, result) => {
+        if (err) {
+            console.error('Erro ao inserir produto no banco:', err);
+            return res.status(500).json({ error: err.message, detail: err });
+        }
+        res.status(201).json({ message: "Produto cadastrado com sucesso", id: result.insertId });
+    });
+});
+
+// ==========================================
 // ROTA: ATUALIZAR PRODUTO EXISTENTE (MÉTODO PUT)
 // ==========================================
 app.put('/api/produtos/:id', (req, res) => {
@@ -71,13 +90,12 @@ app.put('/api/produtos/:id', (req, res) => {
     const { nome, categoria, quantidade, preco, descricao } = req.body;
     const query = 'UPDATE produtos SET nome = ?, categoria = ?, quantidade = ?, preco = ?, descricao = ? WHERE id = ?';
 
-    // CORRIGIDO: Mudado de "category" para "categoria" para evitar o travamento do Node!
     db.query(query, [nome, categoria, parseInt(quantidade), parseFloat(preco), descricao, idProduto], (err, result) => {
         if (err) {
             console.error('Erro ao atualizar produto no banco:', err);
             return res.status(500).json(err);
         }
-        res.json({ message: "Produto atualizado com sucesso" });
+        res.json({ message: "Produto updated com sucesso" });
     });
 });
 
