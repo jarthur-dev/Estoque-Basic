@@ -8,8 +8,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// CONFIGURAÇÃO DIRETAMENTE APONTADA PARA A RAIZ DO PROJETO
 app.use(express.static(path.join(process.cwd())));
 
+// ==========================================
+// CONFIGURAÇÃO DO POOL COM VARIÁVEIS DA VERCEL
+// ==========================================
 const db = mysql.createPool({
     host: process.env.MYSQL_ADDON_HOST,
     database: process.env.MYSQL_ADDON_DB,
@@ -17,15 +21,22 @@ const db = mysql.createPool({
     password: process.env.MYSQL_ADDON_PASSWORD,
     port: process.env.MYSQL_ADDON_PORT || 3306,
     waitForConnections: true,
-    connectionLimit: 1,         
+    connectionLimit: 1,         // Limite seguro para o plano gratuito
     queueLimit: 0,
+    idleTimeout: 10000,         
+    enableKeepAlive: true,      
+    keepAliveInitialDelay: 0,
     ssl: { rejectUnauthorized: false }
 });
 
+// Rota da Página Inicial - Serve a listagem na raiz
 app.get('/', (req, res) => {
     res.sendFile(path.join(process.cwd(), 'listagem.html'));
 });
 
+// ==========================================
+// ROTA 2: LISTAR TODOS OS PRODUTOS (MÉTODO GET)
+// ==========================================
 app.get('/api/produtos', (req, res) => {
     db.query('SELECT * FROM produtos ORDER BY id DESC', (err, results) => {
         if (err) {
@@ -36,9 +47,12 @@ app.get('/api/produtos', (req, res) => {
     });
 });
 
+// ==========================================
+// ROTA: CADASTRAR NOVO PRODUTO (MÉTODO POST)
+// ==========================================
 app.post('/api/produtos', (req, res) => {
     const { nome, categoria, quantidade, preco, descricao } = req.body;
-    const query = 'INSERT INTO produtos (nome, Categoria, quantidade, preco, descricao) VALUES (?, ?, ?, ?, ?)';
+    const query = 'INSERT INTO produtos (nome, categoria, quantidade, preco, descricao) VALUES (?, ?, ?, ?, ?)';
     
     db.query(query, [nome, categoria, parseInt(quantidade), parseFloat(preco), descricao], (err, result) => {
         if (err) {
@@ -49,6 +63,9 @@ app.post('/api/produtos', (req, res) => {
     });
 });
 
+// ==========================================
+// ROTA: DELETAR PRODUTO (MÉTODO DELETE)
+// ==========================================
 app.delete('/api/produtos/:id', (req, res) => {
     const idProduto = req.params.id;
     db.query('DELETE FROM produtos WHERE id = ?', [idProduto], (err, result) => {

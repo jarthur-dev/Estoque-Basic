@@ -10,10 +10,14 @@
       "use": "@vercel/static"
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/:match*",
+      "source": "/api/(.*)",
       "destination": "/api/index.js"
+    },
+    {
+      "source": "/",
+      "destination": "/listagem.html"
     }
   ]
 }
