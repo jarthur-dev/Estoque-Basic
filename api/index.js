@@ -8,13 +8,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// CONFIGURAÇÃO DOS ARQUIVOS ESTÁTICOS APONTANDO PARA A RAIZ DO PROJETO
-app.use(express.static(path.join(__dirname, '..'))); 
-app.use('/css', express.static(path.join(__dirname, '../css')));
-app.use('/js', express.static(path.join(__dirname, '../js')));
+// CONFIGURAÇÃO DIRETAMENTE APONTADA PARA A RAIZ DO PROJETO
+app.use(express.static(path.join(process.cwd())));
 
 // ==========================================
-// CONFIGURAÇÃO DO POOL LENDO AS VARIÁVEIS DA VERCEL
+// CONFIGURAÇÃO DO POOL COM VARIÁVEIS DA VERCEL
 // ==========================================
 const db = mysql.createPool({
     host: process.env.MYSQL_ADDON_HOST,
@@ -23,7 +21,7 @@ const db = mysql.createPool({
     password: process.env.MYSQL_ADDON_PASSWORD,
     port: process.env.MYSQL_ADDON_PORT || 3306,
     waitForConnections: true,
-    connectionLimit: 1,         // Mantido em 1 para o plano gratuito da Clever Cloud
+    connectionLimit: 1,         // Limite seguro para o plano gratuito
     queueLimit: 0,
     idleTimeout: 10000,         
     enableKeepAlive: true,      
@@ -31,9 +29,9 @@ const db = mysql.createPool({
     ssl: { rejectUnauthorized: false }
 });
 
-// Rota da Página Inicial - Serve o arquivo da raiz
+// Rota da Página Inicial - Serve a listagem na raiz
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../listagem.html'));
+    res.sendFile(path.join(process.cwd(), 'listagem.html'));
 });
 
 // ==========================================
@@ -46,23 +44,6 @@ app.get('/api/produtos', (req, res) => {
             return res.status(500).json({ error: err.message, detail: err });
         }
         res.json(results);
-    });
-});
-
-// ==========================================
-// ROTA: BUSCAR APENAS UM PRODUTO PELO ID
-// ==========================================
-app.get('/api/produtos/:id', (req, res) => {
-    const idProduto = req.params.id;
-    db.query('SELECT * FROM produtos WHERE id = ?', [idProduto], (err, result) => {
-        if (err) {
-            console.error('Erro ao buscar produto único no banco:', err);
-            return res.status(500).json(err);
-        }
-        if (result.length === 0) {
-            return res.status(404).json({ message: "Produto não encontrado" });
-        }
-        res.json(result[0]);
     });
 });
 
@@ -83,24 +64,7 @@ app.post('/api/produtos', (req, res) => {
 });
 
 // ==========================================
-// ROTA: ATUALIZAR PRODUTO EXISTENTE (MÉTODO PUT)
-// ==========================================
-app.put('/api/produtos/:id', (req, res) => {
-    const idProduto = req.params.id;
-    const { nome, categoria, quantidade, preco, descricao } = req.body;
-    const query = 'UPDATE produtos SET nome = ?, categoria = ?, quantidade = ?, preco = ?, descricao = ? WHERE id = ?';
-
-    db.query(query, [nome, categoria, parseInt(quantidade), parseFloat(preco), descricao, idProduto], (err, result) => {
-        if (err) {
-            console.error('Erro ao atualizar produto no banco:', err);
-            return res.status(500).json(err);
-        }
-        res.json({ message: "Produto atualizado com sucesso" });
-    });
-});
-
-// ==========================================
-// ROTA 3: DELETAR PRODUTO (MÉTODO DELETE)
+// ROTA: DELETAR PRODUTO (MÉTODO DELETE)
 // ==========================================
 app.delete('/api/produtos/:id', (req, res) => {
     const idProduto = req.params.id;
