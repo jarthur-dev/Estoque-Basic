@@ -28,9 +28,6 @@ function inicializarCadastro() {
             descricao: document.getElementById('descricao').value
         };
 
-        // Captura a div responsável por abrigar mensagens de feedback textual na tela
-        const msgDiv = document.getElementById('mensagem');
-
         try {
             // Dispara uma requisição POST assíncrona enviando o objeto de produto codificado em formato JSON
             const response = await fetch(API_URL, {
@@ -44,15 +41,13 @@ function inicializarCadastro() {
                 mostrarMensagem("Produto cadastrado com sucesso!", "success"); // Aciona a exibição do alerta de sucesso
                 document.getElementById('formCadastro').reset(); // Executa a redefinição de limpeza em todos os inputs do formulário
             } else {
-                throw new Error(); // Força o desvio do fluxo de execução para o bloco catch em caso de falha de status
+                throw new Error("Erro ao salvar produto no servidor."); // Força o desvio do fluxo de execução para o bloco catch
             }
         } catch (error) {
-        // ISSO AQUI VAI MOSTRAR NO CONSOLE DO NAVEGADOR O QUE A VERCEL RESPONDEU
-        console.error("Erro detalhado na requisição:", error);
-        
-        // Manipula o HTML exibindo um aviso textual vermelho caso a requisição web falhe por indisponibilidade do servidor
-        tabela.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Erro ao carregar dados do servidor.</td></tr>`;
-    }
+            // ISSO AQUI VAI MOSTRAR NO CONSOLE DO NAVEGADOR O QUE A VERCEL RESPONDEU
+            console.error("Erro detalhado na requisição de cadastro:", error);
+            mostrarMensagem("Erro ao conectar com o servidor.", "danger");
+        }
     });
 }
 
@@ -66,10 +61,18 @@ async function carregarProdutos() {
         const response = await fetch(API_URL);
         const produtos = await response.json(); // Converte a string de resposta estruturada JSON para Array utilizável
 
+        // ==========================================
+        // BLINDAGEM DA API: VALIDA SE O BACKEND RETORNOU ERRO EM VEZ DE ARRAY
+        // ==========================================
+        if (produtos.error || !Array.isArray(produtos)) {
+            console.error("O banco de dados enviou uma resposta inválida:", produtos);
+            throw new Error(produtos.error || "Resposta inválida do servidor");
+        }
+
         tabela.innerHTML = ''; // Limpa qualquer conteúdo residual preexistente no corpo da tabela
 
         // Condicional: Verifica se o array de resposta do back-end não trouxe registros cadastrados
-        if(produtos.length === 0) {
+        if (produtos.length === 0) {
             // Insere uma linha centralizada cobrindo todas as colunas informando que o estoque está vazio
             tabela.innerHTML = `<tr><td colspan="5" style="text-align:center;">Nenhum produto em estoque.</td></tr>`;
             return;
@@ -84,7 +87,8 @@ async function carregarProdutos() {
                 <td>${prod.nome}</td>
                 <td>${prod.categoria}</td>
                 <td>${prod.quantidade}</td>
-                <td>R$ ${parseFloat(prod.preco).toFixed(2)}</td> <td>
+                <td>R$ ${parseFloat(prod.preco).toFixed(2)}</td>
+                <td>
                     <button class="btn-editar" onclick="alert('Função editar ID: ${prod.id}')">Editar</button>
                     <button class="btn-excluir" onclick="deletarProduto(${prod.id})">Excluir</button>
                 </td>
@@ -93,8 +97,9 @@ async function carregarProdutos() {
             tabela.appendChild(tr);
         });
     } catch (error) {
+        console.error("Erro capturado na renderização da listagem:", error);
         // Manipula o HTML exibindo um aviso textual vermelho caso a requisição web falhe por indisponibilidade do servidor
-        tabela.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Erro ao carregar dados do servidor.</td></tr>`;
+        tabela.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red; font-weight:bold;">Erro ao carregar dados do servidor.</td></tr>`;
     }
 }
 
@@ -120,6 +125,8 @@ async function deletarProduto(id) {
 // ---- FUNÇÃO AUXILIAR DE FEEDBACK VISUAL ----
 function mostrarMensagem(texto, tipo) {
     const msgDiv = document.getElementById('mensagem');
+    if (!msgDiv) return;
+    
     msgDiv.innerText = texto; // Modifica o texto interno do container da mensagem
     msgDiv.className = `mensagem ${tipo}`; // Atribui classes CSS correspondentes para mudar a cor baseada no tipo (sucesso/erro)
     
