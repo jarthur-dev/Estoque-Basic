@@ -7,13 +7,14 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
     <link rel="stylesheet" href="../css/style.css">
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-light d-flex align-items-center" style="min-height: 100vh;">
 
-    <div class="container">
+    <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-6 col-lg-5">
                 
@@ -79,19 +80,16 @@
     </div>
 
     <script>
-        // ROTINA 1: CAPTURAR PARAMETROS DA URL AO CARREGAR A TELA
+        // ROTINA 1: CAPTURAR PARÂMETROS DA URL AO CARREGAR A TELA (MODO EDIÇÃO)
         document.addEventListener('DOMContentLoaded', async () => {
-            // Verifica os parâmetros inseridos na barra de endereços (ex: ?id=2)
             const urlParams = new URLSearchParams(window.location.search);
             const idProduto = urlParams.get('id');
 
-            // Se houver um ID, mudamos o comportamento da tela para o Modo Edição
+            // Se houver um ID na URL, muda o comportamento da tela para o Modo Edição
             if (idProduto) {
-                // Altera dinamicamente os textos dos títulos para o usuário saber que está editando
                 document.getElementById('tituloPagina').innerText = "Editar Produto";
                 document.getElementById('subtituloPagina').innerText = "Atualize os dados necessários do estoque";
                 
-                // Transforma visualmente o botão de envio para "Atualizar" (estilo verde/success)
                 const btnSalvar = document.getElementById('btnSalvar');
                 btnSalvar.className = "btn btn-success w-100 py-2 fw-semibold rounded-3 mb-2";
                 btnSalvar.innerHTML = `<i class="bi bi-arrow-clockwise me-2"></i>Atualizar Produto`;
@@ -103,7 +101,7 @@
                     if (response.ok) {
                         const produto = await response.json();
                         
-                        // Preenche automaticamente cada uma das boxes do formulário
+                        // Preenche automaticamente cada uma das caixas do formulário com os dados atuais
                         document.getElementById('produtoId').value = produto.id;
                         document.getElementById('nome').value = produto.nome;
                         document.getElementById('categoria').value = produto.categoria;
@@ -119,7 +117,7 @@
                         });
                     }
                 } catch (error) {
-                    console.error(error);
+                    console.error("Erro ao carregar dados para edição:", error);
                     Swal.fire({
                         title: 'Erro de Conexão',
                         text: 'Erro ao se comunicar com o servidor no carregamento dos dados.',
@@ -130,66 +128,56 @@
             }
         });
 
-        // ROTINA 2: MONITORAR O ENVIO DO FORMULÁRIO (SALVAR / ATUALIZAR)
+        // ROTINA 2: MONITORAR O ENVIO DO FORMULÁRIO (SALVAR / ATUALIZAR VIA API)
         document.getElementById('formProduto').addEventListener('submit', async (e) => {
-            // Impede que a página recarregue do jeito antigo ao enviar o formulário
-            e.preventDefault();
+            e.preventDefault(); // Impede o recarregamento nativo da página
             
-            // Lê o ID do campo oculto (se tiver valor é Edição/PUT, se estiver vazio é Cadastro/POST)
             const id = document.getElementById('produtoId').value;
 
-            // Monta o objeto JavaScript com os valores digitados nas caixas de texto
+            // Monta o objeto JavaScript com os valores tipados corretamente para o MySQL
             const produto = {
                 nome: document.getElementById('nome').value,
                 categoria: document.getElementById('categoria').value,
-                quantidade: document.getElementById('quantidade').value,
-                preco: document.getElementById('preco').value,
+                quantidade: parseInt(document.getElementById('quantidade').value),
+                preco: parseFloat(document.getElementById('preco').value),
                 descricao: document.getElementById('descricao').value
             };
 
-            // Define dinamicamente o método HTTP e a URL com base na existência do ID
+            // Define dinamicamente o método HTTP e a URL correspondente
             const url = id ? `/api/produtos/${id}` : '/api/produtos';
             const metodoHttp = id ? 'PUT' : 'POST';
 
             try {
-                // Dispara uma requisição HTTP via fetch enviando o JSON real para o back-end
                 const response = await fetch(url, {
                     method: metodoHttp,
-                    headers: { 'Content-Type': 'application/json' }, // Avisa ao servidor que estamos mandando um JSON
-                    body: JSON.stringify(produto) // Transforma o objeto JS em string de texto JSON puro
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(produto)
                 });
 
-                // Se a resposta do servidor retornar com sucesso (status na faixa dos 200)
                 if (response.ok) {
                     Swal.fire({
-                        title: id ? 'Atualizado!' : 'Sucesso Real!',
+                        title: id ? 'Atualizado!' : 'Sucesso!',
                         text: id ? 'Produto atualizado com sucesso no banco de dados!' : 'Produto cadastrado com sucesso no banco de dados!',
                         icon: 'success',
-                        confirmButtonColor: id ? '#198754' : '#0d6efd', // Verde se for atualizar, azul se for cadastrar
+                        confirmButtonColor: id ? '#198754' : '#0d6efd',
                         confirmButtonText: 'Excelente!'
                     }).then(() => {
-                        // Se foi uma edição, após o usuário clicar em "Excelente!", ele volta automático para a tabela
-                        if (id) {
-                            window.location.href = 'listagem.html';
-                        } else {
-                            document.getElementById('formProduto').reset(); // Limpa se for apenas um novo item
-                        }
+                        // Após clicar em confirmar, sempre retorna para a tela de gerenciamento de estoque
+                        window.location.href = 'listagem.html';
                     });
                 } else {
-                    // Alerta moderno para erro de resposta do servidor
                     Swal.fire({
                         title: id ? 'Erro na Atualização' : 'Erro no Cadastro',
-                        text: 'Não foi possível salvar as alterações no banco de dados.',
+                        text: 'O servidor recusou a requisição ao salvar no banco de dados.',
                         icon: 'error',
                         confirmButtonColor: '#dc3545'
                     });
                 }
             } catch (error) {
-                console.error(error);
-                // Alerta moderno para falha de conexão (servidor desligado)
+                console.error("Erro na comunicação com a API:", error);
                 Swal.fire({
                     title: 'Erro de Conexão',
-                    text: 'Não foi possível falar com o servidor. Garanta que rodou o node server.js!',
+                    text: 'Não foi possível estabelecer contato com os servidores da API na nuvem.',
                     icon: 'warning',
                     confirmButtonColor: '#ffc107'
                 });
