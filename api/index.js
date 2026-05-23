@@ -96,15 +96,5 @@ app.delete('/api/produtos/:id', (req, res) => {
     });
 });
 
-// ==========================================
-// INICIALIZAÇÃO DO SERVIDOR WEB
-// ==========================================
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log('==================================================');
-    console.log(`Servidor rodando na porta ${PORT} com MySQL na Nuvem!`);
-    console.log('==================================================');
-});
-
 // Exporta o app para o Vercel conseguir ler como Serverless Function
 module.exports = app;
