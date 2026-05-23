@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/html/listagem.html",
+      "permanent": true
+    }
+  ]
+}
